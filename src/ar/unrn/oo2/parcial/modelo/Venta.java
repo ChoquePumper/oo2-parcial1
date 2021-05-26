@@ -34,5 +34,18 @@ public class Venta {
 	public float getLitrosCargados() { return litros_cargados; }
 	public float getMontoFacturado() { return monto_facturado; }
 
+	// Otros
+	public String generarTexto( String separador )
+	{
+		return String.join( separador,
+				getFecha().toString(),
+				getTipoDeCombustible().getNombreCorto(),
+				Float.toString( getLitrosCargados() ),
+				Float.toString( getMontoFacturado() )
+			);
+	}
 	
+	public String toString() {
+		return "<Venta: "+generarTexto(", ")+">";
+	}
 }

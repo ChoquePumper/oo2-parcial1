@@ -13,6 +13,8 @@ public abstract class TipoDeCombustible {
 		this.nombre_a_mostrar = nombre_a_mostrar;
 		this.precio_por_litro = precioPorLitro;
 
+		if (!ValidarNombreCorto())
+			throw new RuntimeException("");
 		if (!ValidarString(nombre_a_mostrar))
 			throw new RuntimeException("El nombre a mostrar no puede quedar vacio");
 		if (!ValidarPrecioPorLitro())
@@ -20,7 +22,7 @@ public abstract class TipoDeCombustible {
 	}
 	
 	private boolean ValidarNombreCorto() {
-		return ValidarString(nombre_corto) && nombre_corto.contains(" ");
+		return ValidarString(nombre_corto) && !nombre_corto.contains(" ");
 	}
 	private boolean ValidarString(String texto) { return texto!=null && !texto.isBlank(); }
 	private boolean ValidarPrecioPorLitro()
@@ -29,6 +31,8 @@ public abstract class TipoDeCombustible {
 	public String getNombreCorto() { return nombre_corto; }
 	public String getNombreAMostrar() { return nombre_a_mostrar; }
 	public float getPrecioPorLitro() { return precio_por_litro; }
+	
+	public String toString() { return getNombreCorto(); }
 	
 	/** Debe devolver un valor entre 0 y 1 (0% y 100% respectivamente).*/
 	public abstract float getDescuento(LocalDateTime fecha_hora, float litros_a_cargar);

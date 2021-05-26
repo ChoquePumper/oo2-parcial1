@@ -11,6 +11,7 @@ public class VentanaPrincipal extends JFrame {
 	
 	public VentanaPrincipal( Persistencia per, ListaTiposDeCombustible lista_combustibles )
 	{
+		super("");
 		this.per = per;
 		this.lista_combustibles = lista_combustibles;
 	}

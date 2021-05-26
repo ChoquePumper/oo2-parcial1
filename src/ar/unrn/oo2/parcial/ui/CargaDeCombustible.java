@@ -11,77 +11,137 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.JPanel;
 
+import ar.unrn.oo2.parcial.modelo.EstacionDeServicio;
 import ar.unrn.oo2.parcial.modelo.ListaTiposDeCombustible;
 import ar.unrn.oo2.parcial.modelo.Persistencia;
+import ar.unrn.oo2.parcial.modelo.TipoDeCombustible;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.LayoutManager;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.ColumnSpec;
+import com.jgoodies.forms.layout.RowSpec;
+import com.jgoodies.forms.layout.FormSpecs;
+import java.awt.GridLayout;
+import javax.swing.DefaultComboBoxModel;
+import java.awt.event.ActionListener;
+import java.time.LocalDateTime;
+import java.awt.event.ActionEvent;
 
 public class CargaDeCombustible extends JFrame {
-	private Persistencia per;
-	ListaTiposDeCombustible lista_combustibles;
 	
-	private JComboBox<?> cbTipoDeCombustible;
-	private JTextField inputLitrosACargar;
-	private JTextField roMonto; // Read-only
+	private EstacionDeServicio estacion; 
+	
 	private JButton btnConfirmar, btnConsultarMonto;
+	private JTextField inputLitrosACargar;
+	private JTextField roMonto;
+	private JComboBox<cbElementoTiposDeCombustible> cbTipoDeCombustible;
+	private LocalDateTime fecha;
 	
-	public CargaDeCombustible( Persistencia per, ListaTiposDeCombustible lista_combustibles )
+	public CargaDeCombustible( EstacionDeServicio estacion )
 	{
 		super("Carga de combustible");
-		this.per = per;
-		this.lista_combustibles = lista_combustibles;
-		setSize(256,192);
+		this.estacion = estacion;
+		//this.per = per;
+		//this.lista_combustibles = lista_combustibles;
+		setSize(256,164);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		BorderLayout b = new BorderLayout();
-		setLayout(b);
-		
-		Container pane = getContentPane();
+		getContentPane().setLayout(new BorderLayout(0, 0));
 		
 		JPanel centerPanel = new JPanel();
-		SpringLayout spl = new SpringLayout();
-		centerPanel.setLayout(spl);
-		centerPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-		//centerPanel.add();
-		cbTipoDeCombustible = new JComboBox();
+		getContentPane().add(centerPanel, BorderLayout.CENTER);
+		SpringLayout sl_centerPanel = new SpringLayout();
+		centerPanel.setLayout(sl_centerPanel);
+		
+		cbTipoDeCombustible = new JComboBox<cbElementoTiposDeCombustible>();
+		cbTipoDeCombustible.setModel(new DefaultComboBoxModel(
+				cbElementoTiposDeCombustible.generarLista( estacion.getListaDeTiposDeCombustible() ) ));
+		sl_centerPanel.putConstraint(SpringLayout.NORTH, cbTipoDeCombustible, 10, SpringLayout.NORTH, centerPanel);
+		sl_centerPanel.putConstraint(SpringLayout.EAST, cbTipoDeCombustible, -10, SpringLayout.EAST, centerPanel);
+		centerPanel.add(cbTipoDeCombustible);
+		
 		inputLitrosACargar = new JTextField();
+		sl_centerPanel.putConstraint(SpringLayout.NORTH, inputLitrosACargar, 6, SpringLayout.SOUTH, cbTipoDeCombustible);
+		sl_centerPanel.putConstraint(SpringLayout.EAST, inputLitrosACargar, -10, SpringLayout.EAST, centerPanel);
+		centerPanel.add(inputLitrosACargar);
+		inputLitrosACargar.setColumns(10);
 		
-		Component[][] componentes = {
-				{new JLabel("Tipo de combustible"), cbTipoDeCombustible},
-				{new JLabel("Litros a cargar"), inputLitrosACargar},
-		};
+		roMonto = new JTextField();
+		roMonto.setEditable(false);
+		sl_centerPanel.putConstraint(SpringLayout.NORTH, roMonto, 6, SpringLayout.SOUTH, inputLitrosACargar);
+		sl_centerPanel.putConstraint(SpringLayout.EAST, roMonto, -10, SpringLayout.EAST, centerPanel);
+		centerPanel.add(roMonto);
+		roMonto.setColumns(10);
 		
-		for (Component[] fila: componentes)
-			for(Component col: fila)
-				centerPanel.add(col);
+		JLabel lblTipoDeCombustible = new JLabel("Tipo de combustible");
+		sl_centerPanel.putConstraint(SpringLayout.WEST, roMonto, 8, SpringLayout.EAST, lblTipoDeCombustible);
+		sl_centerPanel.putConstraint(SpringLayout.WEST, inputLitrosACargar, 8, SpringLayout.EAST, lblTipoDeCombustible);
+		sl_centerPanel.putConstraint(SpringLayout.WEST, cbTipoDeCombustible, 8, SpringLayout.EAST, lblTipoDeCombustible);
+		sl_centerPanel.putConstraint(SpringLayout.NORTH, lblTipoDeCombustible, 10, SpringLayout.NORTH, centerPanel);
+		sl_centerPanel.putConstraint(SpringLayout.WEST, lblTipoDeCombustible, 10, SpringLayout.WEST, centerPanel);
+		centerPanel.add(lblTipoDeCombustible);
 		
-		for (int i_fila=0; i_fila < componentes.length; i_fila++) {
-			Component[] fila = componentes[i_fila];
-			
-			spl.putConstraint(SpringLayout.WEST, fila[0],
-					5, SpringLayout.WEST, pane);
-			spl.putConstraint(SpringLayout.WEST, fila[1],
-					5, SpringLayout.EAST, fila[0]);
-			spl.putConstraint(SpringLayout.EAST, fila[1],
-					0, SpringLayout.EAST, pane);
-		}
+		JLabel lblLitrosACargar = new JLabel("Litros a cargar");
+		sl_centerPanel.putConstraint(SpringLayout.NORTH, lblLitrosACargar, 1, SpringLayout.NORTH, inputLitrosACargar);
+		sl_centerPanel.putConstraint(SpringLayout.WEST, lblLitrosACargar, 0, SpringLayout.WEST, lblTipoDeCombustible);
+		centerPanel.add(lblLitrosACargar);
+		
+		JLabel lblMonto = new JLabel("Monto ($)");
+		sl_centerPanel.putConstraint(SpringLayout.NORTH, lblMonto, 1, SpringLayout.NORTH, roMonto);
+		sl_centerPanel.putConstraint(SpringLayout.WEST, lblMonto, 0, SpringLayout.WEST, lblTipoDeCombustible);
+		centerPanel.add(lblMonto);
+		
+		JPanel bottomPanel = new JPanel();
+		getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+		
+		JButton btnConsultarMonto_1 = new JButton("Consultar monto");
+		btnConsultarMonto_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				accionConsultarMonto();
+			}
+		});
+		bottomPanel.add(btnConsultarMonto_1);
+		
+		JButton btnConfirmar_1 = new JButton("Confirmar");
+		btnConfirmar_1.setEnabled(false);
+		bottomPanel.add(btnConfirmar_1);
 		
 		
-		//SpringUtilities;
-		//spl.putConstraint(SpringLayout.WEST, pane, ABORT, getName(), centerPanel);
-		
-		JPanel botones = new JPanel();
-		botones.setLayout(new BoxLayout(botones, BoxLayout.X_AXIS));
-		botones.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
-		btnConsultarMonto = new JButton("Consultar monto");
-		btnConfirmar = new JButton("Confirmar");
-		botones.add( btnConsultarMonto );
-		botones.add( btnConfirmar );
-		
-		pane.add(centerPanel,BorderLayout.CENTER);
-		pane.add(botones, BorderLayout.SOUTH);
 	}
 	
+	private void accionConsultarMonto()
+	{
+		fecha = LocalDateTime.now();
+		float monto = estacion.ConsultarMonto(
+				cbTipoDeCombustible.getItemAt( cbTipoDeCombustible.getSelectedIndex() ).getObjeto(),
+				fecha,
+				Float.parseFloat( inputLitrosACargar.getText()) );
+		roMonto.setText( Float.toString(monto) );
+		
+		//btnConfirmar.setEnabled(true);
+	}
+}
+
+class cbElementoTiposDeCombustible
+{
+	private TipoDeCombustible tipo;
+	
+	private cbElementoTiposDeCombustible(TipoDeCombustible tipo)
+	{
+		this.tipo = tipo;
+	}
+	
+	public TipoDeCombustible getObjeto() { return tipo; }
+	
+	public String toString() { return tipo.getNombreAMostrar(); }
+	
+	static cbElementoTiposDeCombustible[] generarLista( TipoDeCombustible[] lista )
+	{
+		cbElementoTiposDeCombustible[] lista_para_cb = new cbElementoTiposDeCombustible[lista.length];
+		for (int i=0; i<lista.length; i++)
+			lista_para_cb[i] = new cbElementoTiposDeCombustible(lista[i]);
+		return lista_para_cb;
+	}
 }
