@@ -2,29 +2,20 @@ package ar.unrn.oo2.parcial.ui;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
+import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.JPanel;
 
+import ar.unrn.oo2.parcial.exceptions.RegistrarVentaException;
 import ar.unrn.oo2.parcial.modelo.EstacionDeServicio;
 import ar.unrn.oo2.parcial.modelo.ListaTiposDeCombustible;
 import ar.unrn.oo2.parcial.modelo.Persistencia;
 import ar.unrn.oo2.parcial.modelo.TipoDeCombustible;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.LayoutManager;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
-import com.jgoodies.forms.layout.FormSpecs;
-import java.awt.GridLayout;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
@@ -38,7 +29,9 @@ public class CargaDeCombustible extends JFrame {
 	private JTextField inputLitrosACargar;
 	private JTextField roMonto;
 	private JComboBox<cbElementoTiposDeCombustible> cbTipoDeCombustible;
-	private LocalDateTime fecha;
+	
+	private LocalDateTime fecha_hora;
+	//private float monto;
 	
 	public CargaDeCombustible( EstacionDeServicio estacion )
 	{
@@ -96,31 +89,53 @@ public class CargaDeCombustible extends JFrame {
 		JPanel bottomPanel = new JPanel();
 		getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 		
-		JButton btnConsultarMonto_1 = new JButton("Consultar monto");
-		btnConsultarMonto_1.addActionListener(new ActionListener() {
+		btnConsultarMonto = new JButton("Consultar monto");
+		btnConsultarMonto.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				accionConsultarMonto();
 			}
 		});
-		bottomPanel.add(btnConsultarMonto_1);
+		bottomPanel.add(btnConsultarMonto);
 		
-		JButton btnConfirmar_1 = new JButton("Confirmar");
-		btnConfirmar_1.setEnabled(false);
-		bottomPanel.add(btnConfirmar_1);
-		
-		
+		btnConfirmar = new JButton("Confirmar");
+		btnConfirmar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				accionConfirmar();
+			}
+		});
+		btnConfirmar.setEnabled(false);
+		bottomPanel.add(btnConfirmar);
+	}
+	
+	private String getTipoCombustible()
+	{
+		return cbTipoDeCombustible.getItemAt( cbTipoDeCombustible.getSelectedIndex() ).getObjeto().getNombreCorto();
+	}
+	
+	private void accionConfirmar()
+	{
+		try {
+			estacion.registrarVenta(getTipoCombustible(), inputLitrosACargar.getText(), roMonto.getText());
+			
+			JOptionPane.showMessageDialog(this, "La venta ha sido registrada",
+					"Información", JOptionPane.INFORMATION_MESSAGE);
+		}
+		catch (RegistrarVentaException e) {
+			JOptionPane.showMessageDialog(this,e.getMessage(),"Error al registrar la venta", JOptionPane.ERROR_MESSAGE);
+		}
+		finally { btnConfirmar.setEnabled(false); }
 	}
 	
 	private void accionConsultarMonto()
 	{
-		fecha = LocalDateTime.now();
+		fecha_hora = LocalDateTime.now();
 		float monto = estacion.ConsultarMonto(
-				cbTipoDeCombustible.getItemAt( cbTipoDeCombustible.getSelectedIndex() ).getObjeto(),
-				fecha,
-				Float.parseFloat( inputLitrosACargar.getText()) );
+			getTipoCombustible(),
+			fecha_hora,
+			inputLitrosACargar.getText() );
 		roMonto.setText( Float.toString(monto) );
 		
-		//btnConfirmar.setEnabled(true);
+		btnConfirmar.setEnabled(true);
 	}
 }
 

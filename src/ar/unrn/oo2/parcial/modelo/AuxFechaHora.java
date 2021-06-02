@@ -1,7 +1,9 @@
 package ar.unrn.oo2.parcial.modelo;
 
+import java.time.LocalDate;
 //import java.text.DateFormatSymbols;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class AuxFechaHora {
 	//private static String[] meses = new DateFormatSymbols().getMonths();
@@ -36,5 +38,10 @@ public class AuxFechaHora {
 	public static LocalDateTime getFechaHora(String s)
 	{
 		return LocalDateTime.parse(s);
+	}
+	
+	public static LocalDate getFecha(String s)
+	{
+		return LocalDate.parse(s, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 	}
 }

@@ -24,7 +24,7 @@ public abstract class TipoDeCombustible {
 	private boolean ValidarNombreCorto() {
 		return ValidarString(nombre_corto) && !nombre_corto.contains(" ");
 	}
-	private boolean ValidarString(String texto) { return texto!=null && !texto.isBlank(); }
+	private boolean ValidarString(String texto) { return texto!=null && !texto.isEmpty(); }
 	private boolean ValidarPrecioPorLitro()
 		{ return precio_por_litro > 0; }
 
@@ -36,4 +36,10 @@ public abstract class TipoDeCombustible {
 	
 	/** Debe devolver un valor entre 0 y 1 (0% y 100% respectivamente).*/
 	public abstract float getDescuento(LocalDateTime fecha_hora, float litros_a_cargar);
+	
+	public float calcularPrecio(LocalDateTime fecha_hora, float litros_a_cargar)
+	{
+		float descuento = getDescuento(fecha_hora, litros_a_cargar);
+		return getPrecioPorLitro()*litros_a_cargar * (1-descuento);
+	}
 }

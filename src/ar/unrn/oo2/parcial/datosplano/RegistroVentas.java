@@ -8,9 +8,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import ar.unrn.oo2.parcial.exceptions.ConsultarVentasException;
+import ar.unrn.oo2.parcial.exceptions.EstacionDeServicioException;
+import ar.unrn.oo2.parcial.exceptions.RegistrarVentaException;
 import ar.unrn.oo2.parcial.modelo.AuxFechaHora;
 import ar.unrn.oo2.parcial.modelo.EstacionDeServicio;
-import ar.unrn.oo2.parcial.modelo.ListaTiposDeCombustible;
 import ar.unrn.oo2.parcial.modelo.Persistencia;
 import ar.unrn.oo2.parcial.modelo.Venta;
 
@@ -23,17 +25,17 @@ public class RegistroVentas implements Persistencia {
 	private File archivo;
 	//private FileInputStream entrada;
 	
-	public RegistroVentas(String nombre_de_archivo)
+	public RegistroVentas(String nombre_de_archivo) throws EstacionDeServicioException
 	{
 		archivo = new File(nombre_de_archivo);
 		if ( !archivo.exists() )
 			try {
 				archivo.createNewFile();
 			} catch (IOException e) {
-				throw new RuntimeException("Error al crear el archivo", e);
+				throw new EstacionDeServicioException("Error al crear el archivo", e);
 			}
 		if ( !archivo.canRead() )
-			throw new RuntimeException("El archivo no se puede leer");
+			throw new EstacionDeServicioException("El archivo no se puede leer");
 	}
 	
 	private String generarTexto(Venta venta)
@@ -41,27 +43,27 @@ public class RegistroVentas implements Persistencia {
 		return venta.generarTexto( getSeparador() );
 	}
 	
-	private Venta ParsearLinea(String linea, ListaTiposDeCombustible tipos_de_combustible)
+	private Venta ParsearLinea(String linea, EstacionDeServicio estacion)
 	{
 		String[] campos = linea.split( getSeparador() );
-		return EstacionDeServicio.crearVenta(tipos_de_combustible,
+		return estacion.crearVenta(
 				campos[0], campos[1], campos[2], campos[3]);
 	}
 	
 	@Override
-	public void agregarVenta(Venta venta) {
+	public void agregarVenta(Venta venta) throws RegistrarVentaException {
 		try {
 			FileOutputStream salida = new FileOutputStream(archivo,true);
 			salida.write( (generarTexto(venta)+"\n").getBytes());
 			salida.close();
 		} catch (IOException e) {
 			//e.printStackTrace();
-			throw new RuntimeException("No se puede escribir en el archivo", e);
+			throw new RegistrarVentaException("No se puede escribir en el archivo", e);
 		}
 	}
 
 	@Override
-	public ArrayList<Venta> consultarVentas(ListaTiposDeCombustible tipos_de_combustible,LocalDateTime inicio, LocalDateTime fin) {
+	public ArrayList<Venta> consultarVentas(EstacionDeServicio estacion, LocalDateTime inicio, LocalDateTime fin) throws ConsultarVentasException {
 		FileInputStream entrada = null;
 		Scanner s = null;
 		ArrayList<Venta> lista = new ArrayList<Venta>();
@@ -70,13 +72,13 @@ public class RegistroVentas implements Persistencia {
 			s = new Scanner(entrada); // Para leer cada linea
 			while ( s.hasNextLine() ) {
 				String linea = s.nextLine();
-				Venta venta = ParsearLinea(linea, tipos_de_combustible);
+				Venta venta = ParsearLinea(linea, estacion);
 				if (AuxFechaHora.esEntreLasFechas(venta.getFecha(), inicio, fin))
 					lista.add(venta);
 			}
 		} catch (IOException e) {
 			//e.printStackTrace();
-			throw new RuntimeException("No se pudo leer obtener la lista de ventas", e);
+			throw new ConsultarVentasException("No se pudo obtener la lista de ventas", e);
 		} finally {
 			if (s != null) s.close();
 			if (entrada != null)
